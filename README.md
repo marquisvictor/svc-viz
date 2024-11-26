@@ -1,10 +1,13 @@
 ### SVCVIZ
-[![codecov](https://codecov.io/gh/oturns/geosnap/branch/main/graph/badge.svg)](https://codecov.io/gh/oturns/geosnap)
 ![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/geosnap)
-![Conda](https://img.shields.io/conda/dn/conda-forge/geosnap)
 ![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/oturns/geosnap/latest)
 
 <img src="notebooks/SVC-VIZ.png" />
 
-A simple tool for visualizing SVC model coefficient surfaces with very few lines of code enhancing reproducibility and replicability in SVC models. 
+A module for visualizing SVC model coefficient surfaces with minimal code enhancing reproducibility and replicability in these models. 
 
+### Features
+- Enables visualization of coefficient estimates from SVC models, adhering to visualization best practices as outlined in Irekponor and Oshan (in preparation).
+- Facilitates exploration of replicability by comparing coefficient surfaces across two different SVC models.
+- Provides a user-friendly 3-panel visualization template for systematic and consistent analysis.
+- Offers simplicity and compatibility with any SVC model, ensuring broad applicability with minimal effort.
