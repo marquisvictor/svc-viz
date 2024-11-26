@@ -2,7 +2,8 @@
 ![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/geosnap)
 ![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/oturns/geosnap/latest)
 
-<img src="notebooks/SVC-VIZ.png" />
+<div align="center"><img src="notebooks/SVC-VIZ.png" width="600px" /></div>
+
 
 A module for visualizing SVC model coefficient surfaces with minimal code enhancing reproducibility and replicability in these models. 
 
