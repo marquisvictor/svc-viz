@@ -5,7 +5,7 @@
 <div align="center"><img src="notebooks/SVC-VIZ.png" width="600px" /></div>
 
 
-A module for visualizing SVC model coefficient surfaces with minimal code enhancing reproducibility and replicability in these models. 
+An open-source Python software package for visualizing SVC model coefficient surfaces with minimal code enhancing reproducibility and replicability in these models. 
 
 ### Features
 - Enables visualization of coefficient estimates from SVC models, adhering to visualization best practices as outlined in Irekponor and Oshan (in preparation).
