@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib as mpl
-import matplotlib.pyplot as plt
+import scipy.stats as stats
+import seaborn as sns
 import scipy.stats as stats
 
 """
@@ -9,6 +10,9 @@ Author Information:
 - Email: vireks@umd.edu
 - Date Created: 2023-10-12
 """
+
+sns.set_theme(style='white', context='talk', rc={'font.family':'serif', 'font.serif':['Georgia'], 'font.size':13})
+sns.set_palette('bright')
 
 
 def shift_colormap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
@@ -55,7 +59,6 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     Returns:
     - new_cmap: A new colormap that is truncated as per the given parameters.
     """
-    
     new_cmap = mpl.colors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
         cmap(np.linspace(minval, maxval, n)))

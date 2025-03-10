@@ -1,7 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt # type: ignore
+import matplotlib.pyplot as plt 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import pandas as pd
 import geopandas as gpd
+import geopandas as gp # type: ignore
 from shapely import wkt # type: ignore
 from .utils import *
 
@@ -342,3 +344,183 @@ def compare_two_surf(df_geo, est1, stderr1, est2, stderr2, var1,
 
     _compare_surfaces(data_df, var1, var2, t_var1, 
                      t_var2, use_tvalues=use_tvalues)
+    
+
+def threePanel(df, col_names, gwr_object, coef_surfaces=None, gwr_selector=None, aicc=None):
+    
+    # if 3-panel is true and coef_surf is not None or has 
+    # more than one values throw error saying you must have only one surface 
+    # for the 3 panel viz. 
+    
+    if coef_surfaces is None or len(coef_surfaces) != 1:
+        raise ValueError("You must have only one surface for the 3 panel visualization.")
+    
+    params = gpd.GeoDataFrame(gwr_object.params, columns=['intercept'] + 
+                              col_names, geometry=df['geometry'])     
+   
+    df['intercept'] = params['intercept']
+    
+    
+    tvl = pd.DataFrame(gwr_object.filter_tvals(), 
+                           columns=['t_intercept'] + ['t_'+col for col in col_names])
+        
+    bse = gpd.GeoDataFrame(gwr_object.bse, columns=['se_intercept'] + # is geometry !
+                               ['se_'+col for col in col_names], geometry=df['geometry'])
+
+    t_coefname = 't_' +coef_surfaces[0]
+    se_coefname = 'se_' +coef_surfaces[0]
+    
+    _threePanel(tvl[t_coefname], bse[se_coefname], params, 
+               coef_surfaces, gwr_object, df, fits=aicc ) # maybe pass in gwr_selector
+
+
+def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, fits):
+    fig, ax = plt.subplots(
+            3, 1,
+            figsize=(8,8), 
+            gridspec_kw={'height_ratios':[1, 8, 2]})
+    
+    bw = gwr_selector.search()
+    
+    fig.subplots_adjust(hspace=-0.63)
+
+    if isinstance(bw, list):#__class__).split('.')[0]==("<class 'mgwr"):
+        mgwr_bw = gwr_selector.search() # check if colnames == bandwidths number
+        print(mgwr_bw)
+        names_bw = dict(zip(col_names, mgwr_bw))
+        mgwr_coef_bw = names_bw[coef_surf]
+
+        ax[0].plot(range(24, len(var_t)), fits, c='k')
+        
+        ax[0].axvline(mgwr_coef_bw, c='g')
+        ax[0].axvline(mgwr_coef_bw-200, c='orange', linestyle='--')
+        ax[0].axvline(mgwr_coef_bw+100, c='orange', linestyle='--')
+        
+    else:
+        gwr_bw = gwr_selector.search()
+
+        ax[0].plot(range(100, len(var_t), 100), fits, c='k')
+        ax[0].axvline(443, c='g')
+        ax[0].axvline(443-135, c='orange', linestyle='--')
+        ax[0].axvline(443+135, c='orange', linestyle='--')
+        ax[0].tick_params(axis='both', labelsize=14)
+
+    #Set color map
+    cmap = plt.cm.seismic
+    #Find min and max values of the two combined datasets
+    gwr_min = params[coef_surfaces].min()
+    gwr_max = params[coef_surfaces].max()
+    vmin = np.min([gwr_min])
+    vmax = np.max([gwr_max])
+
+    #If all values are negative use the negative half of the colormap
+    if (vmin < 0) & (vmax < 0):
+        cmap = truncate_colormap(cmap, 0.0, 0.5)
+
+    #If all values are positive use the positive half of the colormap
+    elif (vmin > 0) & (vmax > 0):
+        cmap = truncate_colormap(cmap, 0.5, 1.0)
+    #Otherwise, there are positive and negative values so the colormap so zero is the midpoint
+    else:
+        cmap = shift_colormap(cmap, 
+                              start=0.0,
+                              midpoint=1 - vmax / (vmax + abs(vmin)), 
+                              stop=1.)
+
+    #Create scalar mappable for colorbar and stretch colormap across range of data values
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(
+        vmin=vmin, vmax=vmax))
+
+    # Middle Map
+    # kwargs1 = {'edgecolor': 'white', 'alpha': .65}
+    kwargs1 = {'edgecolor': 'white', 'alpha': .65, 'linewidth':0.2}
+    
+
+    params['geometry'] = params.buffer(0)
+    gpd.GeoSeries(params.unary_union.boundary).plot(
+                                                ax=ax[1], 
+                                                color='black', 
+                                                linewidth=0.5
+                                             )
+    params.plot(coef_surfaces[0], cmap=sm.cmap, ax=ax[1], vmin=vmin, vmax=vmax, **kwargs1)
+    
+    divider = make_axes_locatable(ax[1])
+    cax = divider.append_axes("bottom", size="5%", pad=0.1)
+    cbar = plt.colorbar(sm, cax=cax, orientation='horizontal')
+    cbar.ax.tick_params(labelsize=14)
+
+    ax[1].tick_params(
+        axis='both',         
+        which='both', 
+        bottom=False,      
+        top=False, 
+        left=False,
+        right=False,
+        labelleft=False,
+        labelbottom=False
+    ) 
+
+    if isinstance(bw, list):   
+        mgwr_crit = gwr_object.critical_tval()
+        names_crit = dict(zip(col_names, mgwr_crit))
+        mgwr_names_crit = names_crit[coef_surf]  
+        df = df.sort_values(coef_surf).reset_index().drop('index', axis=1)
+        clust1 = df[df[var_t] > mgwr_names_crit]
+        gpd.GeoSeries(clust1.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=0.5)
+        clust2 = df[df[var_t] < -1.*mgwr_names_crit]
+        gp.GeoSeries(clust2.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=0.5)
+
+    else:
+        crit = gwr_object.critical_tval()
+        df['var_t'] = var_t
+        df['var_se'] = var_se
+        df = df.sort_values(coef_surfaces).reset_index().drop('index', axis=1)
+        clust1 = df[df['var_t'] > crit]
+        if not clust1.empty:
+            gpd.GeoSeries(clust1.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=2)
+        else:
+            print('clust1 is empty')
+        clust2 = df[df['var_t'] < -1.*crit]
+        if not clust2.empty:  # Check if clust2 is not empty
+            gpd.GeoSeries(clust2.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=2)
+        else:
+            print("clust2 is empty.")
+#         gpd.GeoSeries(clust2.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=2)
+
+#     print(params[coef_surfaces].values.flatten())
+    
+    ax[2].errorbar(range(len(df)), 
+               params[coef_surfaces].values.flatten(), 
+               yerr = crit * var_se.values,
+               ecolor='grey', 
+               capsize=1, 
+               c='grey', 
+               alpha=.65, 
+               lw=.75
+            )
+
+    color1 = np.array([(sm.to_rgba(v)) for v in clust1[coef_surfaces[0]].values.flatten()])
+    
+    #loop over each data point to plot
+    for x, y, e, c in zip(clust1.index, 
+                      clust1[coef_surfaces[0]].values.flatten(), 
+                      crit*clust1['var_se'], 
+                      color1):
+        ax[2].errorbar(x, y, e, lw=2.25, capsize=5, c=c)
+
+    color2 = np.array([(sm.to_rgba(v)) for v in clust2[coef_surfaces[0]].values.flatten()])
+    #loop over each data point to plot
+    for x, y, e, c in zip(clust2.index, 
+                        clust2[coef_surfaces[0]].values.flatten(), 
+                        crit*clust2['var_se'], 
+                        color2):
+        ax[2].errorbar(x, y, e, lw=2.25, capsize=5, color=c)
+
+    ax[2].axhline(0, c='black', linestyle='--')
+    ax[2].tick_params(axis='both', labelsize=14)
+    
+    fig.tight_layout()
+    fig.suptitle(f'Three Panel Visualization for the {coef_surfaces[0]} covariate', fontsize=17, va='baseline')  # Add this line for the title
+    plt.savefig('3panel2.png')
+    plt.show()
+
