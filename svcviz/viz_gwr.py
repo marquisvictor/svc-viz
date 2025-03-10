@@ -1,8 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 import pandas as pd
 import geopandas as gpd
-from shapely import wkt
+from shapely import wkt # type: ignore
 from .utils import *
 
 """
@@ -29,6 +29,7 @@ def compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None):  # may be
     Returns:
     - None: Displays a grid of surface plots.
     """
+
     n_vars = len(vars)
     tvalues = ['t_' + var for var in vars]  # Automatically generate tvalue column names
 
@@ -83,12 +84,12 @@ def compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None):  # may be
     plt.show()
 
 
-
 def viz_gwr(col_names, df_geo, gwr_object, use_tvalues=True,  alpha=0.05, coef_surfaces=None):
 
     """
     Visualize Geographically Weighted Regression (GWR) results by plotting coefficient surfaces
     and optionally overlaying t-values to highlight significant regions.
+
     ================================
     Parameters:
     - col_names (list of str): The names of the coefficients (excluding intercept and geometry).
@@ -101,6 +102,7 @@ def viz_gwr(col_names, df_geo, gwr_object, use_tvalues=True,  alpha=0.05, coef_s
     Returns:
     - None: Displays the coefficient surfaces plots.
     """
+
     data = gpd.GeoDataFrame(gwr_object.params, geometry=df_geo)
     col_names = ['intercept'] + col_names + ['geometry']
     data.columns = col_names
@@ -123,6 +125,7 @@ def viz_gw(df_geo, betas, std_errs, use_tvalues=True, coef_surfaces=None, alpha=
     """
     Visualize Geographically Weighted (GW) results by plotting coefficient surfaces
     and optionally overlaying t-values to highlight significant regions.
+
     ================================
     Parameters:
     - df_geo (Geometry): The geometry column of the main dataframe
@@ -193,23 +196,13 @@ def compare_conf(df_geo, est1, stderr1, est2, stderr2, var1,
     data_df[var1] = ((model_1['lower_'+var1] <= data['upper_'+var2]) &
                      (model_1['upper_'+var1] >= data['lower_'+var2]))
     
-    fig, ax = plt.subplots(figsize=(12, 10))
-    data_df[data_df[var1]].plot(ax=ax, color='white', edgecolor='grey', linewidth=.05, label='Overlap')
-    data_df[~data_df[var1]].plot(ax=ax, color='#e1ad01', edgecolor='black', linewidth=1.2, label='Overlap')
-
-    ax.tick_params(
-        axis='both',         
-        which='both', 
-        bottom=False,      
-        top=False, 
-        left=False,
-        right=False,
-        labelleft=False,
-        labelbottom=False
-    ) 
+    fig, ax = plt.subplots(figsize=(10, 8))
+    data_df[data_df[var1]].plot(ax=ax, color='yellow', edgecolor='grey', linewidth=.1, label='Overlap')
+    data_df[~data_df[var1]].plot(ax=ax, color='white', edgecolor='black', linewidth=0.3, label='Overlap')
+    plt.xticks([])
+    plt.yticks([])
     
     ax.set_title(f' Model 1 vs Model 2 Confidence Interval Agreement \n {round(data_df[var1].sum()/len(data_df)*100, 2)}% of the confidence intervals of both models overlap. {round(100-(data_df[var1].sum()/len(data_df)*100), 2)}% do not', fontsize=12);
-
 
 
 
@@ -241,8 +234,6 @@ def _compare_surfaces(data, var1, var2, var1_t, var2_t, use_tvalues=False, savef
     savefig: string, optional
              path to save the figure. Default is None. Not to save figure.
     '''
-
-    
 
     fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(9, 9))
     ax0 = axes[0]
