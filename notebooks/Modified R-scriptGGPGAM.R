@@ -13,7 +13,7 @@ library(Metrics)
 
 
 
-df <- read_csv("C:/Users/Lenovo/Documents/PhD Applied Spatial Data Science and UI/R & R Special Issue/us-data.csv")
+df <- read_csv("data/us-data.csv")
 # hex.gb = st_transform(hex.sp, 27700)
 df <- st_as_sf(df, wkt = "geometry")
 

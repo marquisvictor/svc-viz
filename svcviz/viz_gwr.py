@@ -15,23 +15,7 @@ Author Information:
 """
 
 
-def compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None):  # may be deprecated
-
-    """
-    Create a grid of surface plots for a set of variables from a dataset. Each plot shows one variable,
-    and t-values can be overlaid to highlight significant regions. The colormap is adjusted based on the 
-    data values to make visualization more intuitive.
-    ================================
-    Parameters:
-    - data (DataFrame or similar): The dataset containing the variables and t-values to plot.
-    - vars (list of str): The names of the variables to plot. Each variable should correspond to a column in 'data'.
-    - use_tvalues (bool): Whether to overlay t-values on the plots to highlight significant regions. Defaults to True.
-    - savefig (str or None): The file path to save the figure to. If None, the figure is not saved. Defaults to None.
-
-    Returns:
-    - None: Displays a grid of surface plots.
-    """
-
+def compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None):
     n_vars = len(vars)
     tvalues = ['t_' + var for var in vars]  # Automatically generate tvalue column names
 
@@ -68,7 +52,10 @@ def compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None):  # may be
         data.plot(var, cmap=sm.cmap, ax=ax, vmin=vmin, vmax=vmax, edgecolor='grey', linewidth=0.2)
         if use_tvalues:
             tvalue_col = tvalues[i]
-            data[data[tvalue_col] == 0].plot(color='lightgrey', edgecolor='black', ax=ax, linewidth=0.005)
+            if data[data[tvalue_col]==0].empty:
+                print(f"No significant values for {tvalue_col}, skipping mask.")
+            else:
+                data[data[tvalue_col] == 0].plot(color='lightgrey', edgecolor='black', ax=ax, linewidth=0.005)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
     if n_vars > 2:
@@ -84,6 +71,7 @@ def compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None):  # may be
     if savefig is not None:
         plt.savefig(savefig)
     plt.show()
+
 
 
 def viz_gwr(col_names, df_geo, gwr_object, use_tvalues=True,  alpha=0.05, coef_surfaces=None):
@@ -161,24 +149,6 @@ def viz_gw(df_geo, betas, std_errs, use_tvalues=True, coef_surfaces=None, alpha=
 def compare_conf(df_geo, est1, stderr1, est2, stderr2, var1,
                      var2, z_value=1.96):
 
-    """
-    Compare the confidence intervals of two estimated models, highlighting areas where the intervals overlap.
-
-    ================================
-    Parameters:
-    - df_geo (Geometry): The geometry column of the main dataframe
-    - est1 (DataFrame): The DataFrame containing beta coefficients of the first model.
-    - stderr1 (DataFrame): The DataFrame containing standard errors corresponding to beta coefficients of the first model.
-    - est2 (DataFrame): The DataFrame containing beta coefficients of the second model.
-    - stderr2 (DataFrame): The DataFrame containing standard errors corresponding to beta coefficients of the second model.
-    - var1 (str): The specific variable of interest from the first model to be compared.
-    - var2 (str): The specific variable of interest from the second model to be compared.
-    - z_value (float): The z-value for calculating the confidence interval. Defaults to 1.96 for a 95% confidence interval.
-
-    Returns:
-    - None: Displays a plot highlighting areas with overlapping confidence intervals.
-    """
-    
     est1.columns = ['beta_'+col if not col.startswith('beta_') else col for col in est1.columns]
     stderr1.columns = ['std_'+col if not col.startswith('std') else col for col in stderr1.columns]
     model_1 = merge_index(est1, stderr1)
@@ -199,13 +169,12 @@ def compare_conf(df_geo, est1, stderr1, est2, stderr2, var1,
                      (model_1['upper_'+var1] >= data['lower_'+var2]))
     
     fig, ax = plt.subplots(figsize=(10, 8))
-    data_df[data_df[var1]].plot(ax=ax, color='yellow', edgecolor='grey', linewidth=.1, label='Overlap')
-    data_df[~data_df[var1]].plot(ax=ax, color='white', edgecolor='black', linewidth=0.3, label='Overlap')
+    data_df[~data_df[var1]].plot(ax=ax, color='yellow', edgecolor='grey', linewidth=.6, label='Overlap')
+    data_df[data_df[var1]].plot(ax=ax, color='white', edgecolor='black', linewidth=0.06, label='Overlap')
     plt.xticks([])
     plt.yticks([])
     
-    ax.set_title(f' Model 1 vs Model 2 Confidence Interval Agreement \n {round(data_df[var1].sum()/len(data_df)*100, 2)}% of the confidence intervals of both models overlap. {round(100-(data_df[var1].sum()/len(data_df)*100), 2)}% do not', fontsize=12);
-
+    ax.set_title(f' Model 1 vs Model 2 Confidence Interval Agreement \n {round(100-(data_df[var1].sum()/len(data_df)*100), 2)}% of the confidence intervals do not overlap, while {round(data_df[var1].sum()/len(data_df)*100, 2)}% do.', fontsize=12);
 
 
 def _compare_surfaces(data, var1, var2, var1_t, var2_t, use_tvalues=False, savefig=None):
@@ -371,10 +340,10 @@ def threePanel(df, col_names, gwr_object, coef_surfaces=None, gwr_selector=None,
     se_coefname = 'se_' +coef_surfaces[0]
     
     _threePanel(tvl[t_coefname], bse[se_coefname], params, 
-               coef_surfaces, gwr_object, df, fits=aicc ) # maybe pass in gwr_selector
+               coef_surfaces, gwr_object, df, fits=aicc, gwr_selector=gwr_selector ) # maybe pass in gwr_selector
 
 
-def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, fits):
+def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_selector, fits):
     fig, ax = plt.subplots(
             3, 1,
             figsize=(8,8), 
