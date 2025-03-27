@@ -315,7 +315,7 @@ def compare_two_surf(df_geo, est1, stderr1, est2, stderr2, var1,
                      t_var2, use_tvalues=use_tvalues)
     
 
-def threePanel(df, col_names, gwr_object, coef_surfaces=None, gwr_selector=None, aicc=None):
+def three_panel(df, col_names, gwr_object, coef_surfaces=None, gwr_selector=None, aicc=None):
     
     # if 3-panel is true and coef_surf is not None or has 
     # more than one values throw error saying you must have only one surface 
@@ -338,9 +338,9 @@ def threePanel(df, col_names, gwr_object, coef_surfaces=None, gwr_selector=None,
 
     t_coefname = 't_' +coef_surfaces[0]
     se_coefname = 'se_' +coef_surfaces[0]
-    
     _threePanel(tvl[t_coefname], bse[se_coefname], params, 
-               coef_surfaces, gwr_object, df, fits=aicc, gwr_selector=gwr_selector ) # maybe pass in gwr_selector
+               coef_surfaces, gwr_object, df, gwr_selector, fits=aicc ) # maybe pass in gwr_selector
+
 
 
 def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_selector, fits):
