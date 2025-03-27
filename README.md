@@ -9,8 +9,10 @@ The spatially varying coefficient visualization (svc-viz) tool is an open-source
 
 <div align="center"><img src="notebooks/data/svcviz-diagram.png" width="600px" /></div> 
 <br /><br />
+
 ### Features
 - Enables visualization of coefficient estimates from SVC models, adhering to visualization best practices as outlined in Irekponor and Oshan (in preparation).
 - Facilitates exploration of replicability by comparing coefficient surfaces across two different SVC models.
 - Provides a user-friendly 3-panel visualization template for systematic and consistent analysis.
 - Offers simplicity and compatibility with any SVC model, ensuring broad applicability with minimal effort.
+
