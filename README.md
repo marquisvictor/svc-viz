@@ -16,3 +16,16 @@ The spatially varying coefficient visualization (svc-viz) tool is an open-source
 - Provides a user-friendly 3-panel visualization template for systematic and consistent analysis.
 - Offers simplicity and compatibility with any SVC model, ensuring broad applicability with minimal effort.
 
+### Installation:
+
+svc-viz can be installed from PyPI:
+
+```bash
+$ pip install svc-viz
+```
+
+To install the latest version from Github:
+
+```bash
+$ pip install git+https://github.com/marquisvictor/svc-viz.git
+```
