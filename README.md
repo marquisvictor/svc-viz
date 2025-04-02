@@ -29,3 +29,8 @@ To install the latest version from Github:
 ```bash
 $ pip install git+https://github.com/marquisvictor/svc-viz.git
 ```
+### Usage:
+After installing svc-viz, it can be imported into a python environment with the following command: 
+```bash
+> from svc-viz.viz_gwr import compare_two_surf, viz_gwr, compare_conf, three_panel
+```
