@@ -1,6 +1,9 @@
 ### SVCVIZ
-![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/geosnap)
-![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/oturns/geosnap/latest)
+![PyPI](https://img.shields.io/pypi/v/svc-viz)
+![Python Version](https://img.shields.io/pypi/pyversions/svc-viz)
+![GitHub last commit](https://img.shields.io/github/last-commit/marquisvictor/svc-viz)
+![GitHub stars](https://img.shields.io/github/stars/marquisvictor/svc-viz?style=social)
+
 
 <div align="center"><img src="notebooks/data/svcvizlogo.png" width="600px" /></div>
 
