@@ -29,3 +29,20 @@ To install the latest version from Github:
 ```bash
 $ pip install git+https://github.com/marquisvictor/svc-viz.git
 ```
+
+---
+
+### 📄 Citation & Related Research
+
+This package was developed in support of the research paper:
+
+**"Reproducible visualization strategies for spatially varying coefficient models: Incorporating uncertainty and assessing replicability"**  
+➡️ Available on GitHub: [2025_CaGIS_Special-Issue_Article](https://github.com/marquisvictor/2025_CaGIS_Special-Issue_Article)
+
+If you use `svc-viz` in your work, please cite the paper and link to this repository to support continued development and visibility of the tool.
+
+---
+
+### 💬 Questions or Contributions?
+
+Feel free to open an [issue](https://github.com/marquisvictor/svc-viz/issues) or submit a pull request. Contributions are welcome!
