@@ -1,4 +1,4 @@
-Metadata-Version: 2.2
+Metadata-Version: 2.4
 Name: svc-viz
 Version: 0.0.1
 Summary: A python software package for visualizing the results of spatially varying coefficient (SVC) models, enhancing reproducibility and replicability
@@ -13,4 +13,5 @@ Dynamic: author
 Dynamic: author-email
 Dynamic: classifier
 Dynamic: home-page
+Dynamic: license-file
 Dynamic: summary
