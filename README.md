@@ -1,4 +1,4 @@
-### SVCVIZ
+# SVC-VIZ
 ![PyPI](https://img.shields.io/pypi/v/svc-viz)
 ![Python Version](https://img.shields.io/pypi/pyversions/svc-viz)
 ![GitHub last commit](https://img.shields.io/github/last-commit/marquisvictor/svc-viz)
