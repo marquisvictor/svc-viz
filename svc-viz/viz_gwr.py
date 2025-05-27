@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import pandas as pd
 import geopandas as gpd
+from utils import merge_index
+from matplotlib.patches import Patch  
 import geopandas as gp # type: ignore
 from shapely import wkt # type: ignore
 
@@ -188,61 +190,59 @@ def add_scalebar(ax, length=10, location=(0.1, 0.05), linewidth=3, units='m'):
     
 def compare_conf(df_geo, est1, stderr1, est2, stderr2, var1,
                      var2, z_value=1.96, savefig=None):
-    from viz_gwr import merge_index
-    from matplotlib.patches import Patch  # to-do: Add this at the top of your script
+
     
+    """
+    Compare confidence intervals between two models and visualize regions of overlap.
+
+    This function computes confidence intervals for a shared variable estimated in two models,
+    and identifies where the intervals overlap or diverge. It produces a map showing regions
+    of agreement (overlapping CIs) and disagreement (non-overlapping CIs) between the models.
+
+    Parameters
+    ----------
+    df_geo      : GeoSeries
+                    Geometry column for spatial plotting.
+    est1        : DataFrame
+                    Beta coefficients from the first model. Columns must be named by covariate.
+    stderr1     : DataFrame
+                    Standard errors corresponding to `est1`.
+    est2        : DataFrame
+                    Beta coefficients from the second model.
+    stderr2     : DataFrame
+                    Standard errors corresponding to `est2`.
+    var1        : str
+                    Covariate name in the first model to compare.
+    var2        : str
+                    Covariate name in the second model to compare.
+    z_value     : float, optional
+                    Z-score for constructing confidence intervals (default is 1.96 for 95% CI).
+    savefig     : str, optional
+                    If provided, saves the figure to the specified path. File format is inferred 
+                    from the extension (e.g., 'plot.png', 'plot.pdf').
+
+    Returns
+    -------
+    None
+        Displays a map with two categories:
+        - Overlapping confidence intervals (light gray)
+        - Non-overlapping confidence intervals (yellow)
+
+        Notes
+    -----
+    Overlapping confidence intervals do not imply statistical equivalence —
+    further hypothesis testing would be required to formally assess equivalence. However,
+    non-overlapping intervals provide strong evidence of differences, indicating spatial
+    regions where relationships do not replicate between the two models.
+
+    This function is particularly useful for spatially varying coefficient (SVC) models,
+    where reproducibility and replicability are often assessed by comparing local estimates
+    across model specifications, methods, or datasets.
     
-     """
-        Compare confidence intervals between two models and visualize regions of overlap.
-
-        This function computes confidence intervals for a shared variable estimated in two models,
-        and identifies where the intervals overlap or diverge. It produces a map showing regions
-        of agreement (overlapping CIs) and disagreement (non-overlapping CIs) between the models.
-
-        Parameters
-        ----------
-        df_geo      : GeoSeries
-                     Geometry column for spatial plotting.
-        est1        : DataFrame
-                     Beta coefficients from the first model. Columns must be named by covariate.
-        stderr1     : DataFrame
-                     Standard errors corresponding to `est1`.
-        est2        : DataFrame
-                     Beta coefficients from the second model.
-        stderr2     : DataFrame
-                     Standard errors corresponding to `est2`.
-        var1        : str
-                     Covariate name in the first model to compare.
-        var2        : str
-                     Covariate name in the second model to compare.
-        z_value     : float, optional
-                     Z-score for constructing confidence intervals (default is 1.96 for 95% CI).
-        savefig     : str, optional
-                     If provided, saves the figure to the specified path. File format is inferred 
-                     from the extension (e.g., 'plot.png', 'plot.pdf').
-
-        Returns
-        -------
-        None
-            Displays a map with two categories:
-            - Overlapping confidence intervals (light gray)
-            - Non-overlapping confidence intervals (yellow)
-
-         Notes
-        -----
-        Overlapping confidence intervals do not imply statistical equivalence —
-        further hypothesis testing would be required to formally assess equivalence. However,
-        non-overlapping intervals provide strong evidence of differences, indicating spatial
-        regions where relationships do not replicate between the two models.
-
-        This function is particularly useful for spatially varying coefficient (SVC) models,
-        where reproducibility and replicability are often assessed by comparing local estimates
-        across model specifications, methods, or datasets.
-        
-        Examples
-        --------
-        >>> compare_conf(df.geometry, model1_betas, model1_ses, model2_betas, model2_ses, 'income', 'income')
-        >>> compare_conf(df.geometry, m1, s1, m2, s2, 'pop_density', 'pop_density', z_value=1.645, savefig='ci_overlap.pdf')
+    Examples
+    --------
+    >>> compare_conf(df.geometry, model1_betas, model1_ses, model2_betas, model2_ses, 'income', 'income')
+    >>> compare_conf(df.geometry, m1, s1, m2, s2, 'pop_density', 'pop_density', z_value=1.645, savefig='ci_overlap.pdf')
     """
 
     est1.columns = ['beta_'+col if not col.startswith('beta_') else col for col in est1.columns]
@@ -503,10 +503,6 @@ def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_select
     cmap : matplotlib colormap, optional
         Colormap to use. Default is plt.cm.RdBu_r.
     """
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-    import geopandas as gpd
-    import numpy as np
 
     fig, ax = plt.subplots(3, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [1, 8, 2]})
     bw = gwr_selector.search()

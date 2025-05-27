@@ -5,11 +5,11 @@
 ![GitHub stars](https://img.shields.io/github/stars/marquisvictor/svc-viz?style=social)
 
 
-<div align="center"><img src="notebooks/data/svcvizlogo.png" width="600px" /></div>
+<div align="center"><img src="examples/img/svcvizlogo.png" width="600px" /></div>
 
 The spatially varying coefficient visualization (svc-viz) tool is an open-source Python software package designed to faciilitate the visualization of SVC model results with minimal effort. Svc-viz provides a codified interface for interpreting the results of local regression models based on the existing best practices for visualizing these models, requiring only a minimal amount of coding.
 
-<div align="center"><img src="notebooks/data/svcviz-diagram.png" width="600px" /></div> 
+<div align="center"><img src="examples/img/svcviz-diagram.png" width="600px" /></div> 
 <br /><br />
 
 ### Features
