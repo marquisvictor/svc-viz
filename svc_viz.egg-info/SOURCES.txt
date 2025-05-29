@@ -1,5 +1,6 @@
 LICENSE
 README.md
+pyproject.toml
 setup.py
 svc-viz/__init__.py
 svc-viz/utils.py
