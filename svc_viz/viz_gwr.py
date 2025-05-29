@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import pandas as pd
 import geopandas as gpd
-from utils import merge_index
+from .utils import merge_index
 from matplotlib.patches import Patch  
 import geopandas as gp # type: ignore
 from shapely import wkt # type: ignore
 
-from utils import *
+from .utils import *
 
 def _compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None, cbar_label=None, cmap=plt.cm.RdBu_r):
     """

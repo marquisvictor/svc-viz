@@ -4,8 +4,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name='svc-viz',
-    version='0.1.0',
+    name='svc_viz',
+    version='0.1.3',
     author='Victor Irekponor, Taylor Oshan',
     author_email='vireks@umd.edu',
     description='A python software package for visualizing the results of spatially varying coefficient (SVC) models, enhancing reproducibility and replicability',

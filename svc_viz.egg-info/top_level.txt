@@ -1,2 +1,2 @@
-svc-viz
+svc_viz
 tests

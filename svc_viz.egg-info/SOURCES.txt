@@ -2,9 +2,9 @@ LICENSE
 README.md
 pyproject.toml
 setup.py
-svc-viz/__init__.py
-svc-viz/utils.py
-svc-viz/viz_gwr.py
+svc_viz/__init__.py
+svc_viz/utils.py
+svc_viz/viz_gwr.py
 svc_viz.egg-info/PKG-INFO
 svc_viz.egg-info/SOURCES.txt
 svc_viz.egg-info/dependency_links.txt
