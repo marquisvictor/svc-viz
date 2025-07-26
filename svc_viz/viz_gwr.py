@@ -335,10 +335,10 @@ def _compare_surfaces(data, var1, var2, var1_t, var2_t,
     """
     fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(9, 9))
     ax0 = axes[0]
-    ax0.set_title('MGWR local parameter estimates for pct_bachelors', fontsize=14)
+    ax0.set_title(f'Model 1 local parameter estimates for {var1}', fontsize=14)
 
     ax1 = axes[1]
-    ax1.set_title('GAM with Gaussian Process Splines - pct_bachelors', fontsize=14)
+    ax1.set_title(f'Model 2 local parameter estimates for {var2}', fontsize=14)
 
     vmin = np.min([data[var1].min(), data[var2].min()])
     vmax = np.max([data[var1].max(), data[var2].max()])
@@ -504,9 +504,9 @@ def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_select
         Colormap to use. Default is plt.cm.RdBu_r.
     """
 
-    fig, ax = plt.subplots(3, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [1, 8, 2]})
+    fig, ax = plt.subplots(3, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [1.4, 12, 1.8]})
     bw = gwr_selector.search()
-    fig.subplots_adjust(hspace=-0.63)
+    fig.subplots_adjust(hspace=-0.53)
 
     if isinstance(bw, list):
         mgwr_bw = gwr_selector.search()
@@ -517,10 +517,10 @@ def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_select
     else:
         gwr_bw = gwr_selector.search()
         ax[0].plot(range(100, len(var_t), 100), fits, c='k')
-        ax[0].axvline(443, c='g')
-        ax[0].axvline(443-135, c='orange', linestyle='--')
-        ax[0].axvline(443+135, c='orange', linestyle='--')
-        ax[0].tick_params(axis='both', labelsize=14)
+        ax[0].axvline(220, c='g')
+        ax[0].axvline(220-100, c='orange', linestyle='--')
+        ax[0].axvline(220+100, c='orange', linestyle='--')
+        ax[0].tick_params(axis='both', labelsize=10)
 
     # Compute value range
     gwr_min = params[coef_surfaces].min()
@@ -548,7 +548,7 @@ def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_select
     divider = make_axes_locatable(ax[1])
     cax = divider.append_axes("bottom", size="5%", pad=0.1)
     cbar = plt.colorbar(sm, cax=cax, orientation='horizontal')
-    cbar.ax.tick_params(labelsize=14)
+    cbar.ax.tick_params(labelsize=11)
 
     ax[1].tick_params(axis='both', which='both', bottom=False, top=False,
                       left=False, right=False, labelleft=False, labelbottom=False)
@@ -560,11 +560,11 @@ def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_select
 
     clust1 = df[df['var_t'] > crit]
     if not clust1.empty:
-        gpd.GeoSeries(clust1.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=2)
+        gpd.GeoSeries(clust1.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=0.8)
 
     clust2 = df[df['var_t'] < -1.*crit]
     if not clust2.empty:
-        gpd.GeoSeries(clust2.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=2)
+        gpd.GeoSeries(clust2.unary_union.boundary).plot(ax=ax[1], color='black', linewidth=0.8)
 
     # Bottom plot
     ax[2].errorbar(range(len(df)), 
@@ -587,9 +587,20 @@ def _threePanel(var_t, var_se, params, coef_surfaces, gwr_object, df, gwr_select
         ax[2].errorbar(x, y, e, lw=2.25, capsize=5, color=c)
 
     ax[2].axhline(0, c='black', linestyle='--')
-    ax[2].tick_params(axis='both', labelsize=14)
+    ax[2].tick_params(axis='both', labelsize=11)
+    
+    # Titles for each subplot
+    ax[0].set_title("Bandwidth Selection (AICc)", fontsize=13, pad=10)
+    ax[1].set_title("Spatial Surface of Local Intercept", fontsize=13, pad=10)
+    ax[2].set_title("Coefficient Uncertainty (Caterpillar Plot)", fontsize=13, pad=10)
+    
+    # Axis labels
+    ax[0].set_ylabel("AICc", fontsize=11)
+
+    ax[2].set_ylabel("Coefficient Estimate", fontsize=11)
+    ax[2].set_xlabel("Spatial Unit Index", fontsize=11)
 
     fig.tight_layout()
-    fig.suptitle(f'Three Panel Visualization for the {coef_surfaces[0]} covariate', fontsize=17, va='baseline')
+    fig.suptitle(f'Three Panel Visualization for the Local {coef_surfaces[0]}', fontsize=15, va='baseline', y=1)
     plt.savefig('3panel2.png')
     plt.show()
