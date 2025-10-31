@@ -10,7 +10,7 @@ from shapely import wkt # type: ignore
 
 from .utils import *
 
-def _compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None, cbar_label=None, cmap=plt.cm.RdBu_r):
+def _compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None, cbar_label=None, cmap=plt.cm.RdBu_r, max_cols=3, size_scale=1.0):
     """
     Internal function to plot coefficient surfaces in a grid layout, optionally overlaying non-significant areas
     using t-values and displaying a colorbar.
@@ -31,72 +31,82 @@ def _compare_surfaces_grid(data, vars, use_tvalues=True, savefig=None, cbar_labe
         Colormap to use for visualizing coefficients. Default is plt.cm.RdBu_r.
     """
     n_vars = len(vars)
-    tvalues = ['t_' + var for var in vars]
+    if n_vars == 0:
+        raise ValueError("No variables provided for plotting.")
 
-    grid_dim = int(np.ceil(np.sqrt(n_vars)))
+    # --- Compute balanced grid layout ---
+    n_cols = min(max_cols, n_vars)
+    n_rows = int(np.ceil(n_vars / n_cols))
 
-    if n_vars in [1, 2]:
-        figsize = (11, 9 * n_vars)
-        fig, axes = plt.subplots(nrows=n_vars, ncols=1, figsize=figsize)
-    else:
-        figsize = (13, 11)
-        fig, axes = plt.subplots(nrows=grid_dim, ncols=grid_dim, figsize=figsize)
+    # Balance grid for small even numbers
+    if n_vars == 4:
+        n_rows, n_cols = 2, 2
+    elif n_vars == 6:
+        n_rows, n_cols = 2, 3
+    elif n_vars == 8:
+        n_rows, n_cols = 2, 4
 
+    # --- Aspect ratio ---
+    bounds = data.total_bounds
+    width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
+    aspect_ratio = height / width if width > 0 else 1
+
+    # --- Adaptive figure sizing ---
     if n_vars == 1:
-        axes = [axes]
+        figsize = (6 * (1/aspect_ratio if aspect_ratio < 1 else 1),
+                   6 * (aspect_ratio if aspect_ratio > 1 else 1))
     else:
-        axes = axes.ravel()
+        base_size = 4.5
+        figsize = (base_size * n_cols, base_size * n_rows * aspect_ratio)
 
+    # Apply user scaling
+    figsize = tuple(size_scale * np.array(figsize))
+
+    # --- Figure and axes setup ---
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize)
+    axes = np.array(axes).reshape(-1) if n_vars > 1 else [axes]
+
+    # --- Shared color scale ---
     vmin = min(data[var].min() for var in vars)
     vmax = max(data[var].max() for var in vars)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 
-    if (vmin < 0) & (vmax < 0):
-        cmap = truncate_colormap(cmap, 0.0, 0.5)
-    elif (vmin > 0) & (vmax > 0):
-        cmap = truncate_colormap(cmap, 0.5, 1.0)
-    else:
-        cmap = shift_colormap(cmap, start=0.0,
-                              midpoint=1 - vmax / (vmax + abs(vmin)),
-                              stop=1.0)
-
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=vmin, vmax=vmax))
-
+    # --- Plot each surface ---
     for i, var in enumerate(vars):
         ax = axes[i]
-        ax.set_title(var, fontsize=15)
-        data.plot(var, cmap=sm.cmap, ax=ax, vmin=vmin, vmax=vmax, edgecolor='grey', linewidth=0.2)
+        ax.set_title(var, fontsize=13, pad=8)
+        data.plot(var, cmap=cmap, ax=ax, vmin=vmin, vmax=vmax,
+                  edgecolor='grey', linewidth=0.1, aspect='equal')
 
         if use_tvalues:
-            tvalue_col = tvalues[i]
-            if data[data[tvalue_col] == 0].empty:
-                print(f"No significant values for {tvalue_col}, skipping mask.")
-            else:
-                data[data[tvalue_col] == 0].plot(color='lightgrey', edgecolor='black', ax=ax, linewidth=0.005)
+            t_col = f"t_{var}"
+            if t_col in data.columns:
+                nonsig = data[data[t_col] == 0]
+                if not nonsig.empty:
+                    nonsig.plot(color='lightgrey', ax=ax, linewidth=0.05)
+        ax.axis('off')
 
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
+    # Hide empty subplots if grid isn't full
+    for j in range(i + 1, len(axes)):
+        axes[j].axis('off')
 
-    if n_vars > 2:
-        for j in range(i + 1, grid_dim * grid_dim):
-            axes[j].axis('off')
+    # --- Layout and shared colorbar ---
+    fig.tight_layout(pad=1.4)
+    cbar = fig.colorbar(sm, ax=axes, orientation='vertical',
+                        fraction=0.025, pad=0.02)
+    if cbar_label:
+        cbar.set_label(cbar_label, fontsize=13)
+    cbar.ax.tick_params(labelsize=10)
 
-    fig.subplots_adjust(left=0.05, right=0.70, bottom=0.05, top=0.70, wspace=0.04, hspace=-0.35)
-
-    cax = fig.add_axes([0.75, 0.17, 0.03, 0.42])
-    sm._A = []
-    cbar = fig.colorbar(sm, cax=cax)
-    if cbar_label is not None:
-        cbar.set_label(cbar_label, fontsize=15, labelpad=10)
-    cbar.ax.tick_params(labelsize=15)
-
-    if savefig is not None:
-        plt.savefig(savefig)
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight', dpi=300)
     plt.show()
-
 
        
 def viz_gwr(col_names, df_geo, gwr_object, use_tvalues=True, alpha=0.05,
-            coef_surfaces=None, cbar_label=None, cmap=plt.cm.RdBu_r):
+            coef_surfaces=None, cbar_label=None, cmap=plt.cm.RdBu_r,
+            max_cols=3, size_scale=1.0, savefig=None):
     """
     Visualize GWR results by plotting coefficient surfaces with optional t-value overlay.
 
@@ -118,6 +128,12 @@ def viz_gwr(col_names, df_geo, gwr_object, use_tvalues=True, alpha=0.05,
         Colorbar label. Default is None.
     cmap : matplotlib colormap, optional
         Colormap for coefficients. Default is plt.cm.RdBu_r.
+    max_cols : int, optional
+        Maximum number of columns before wrapping. Default is 3.
+    size_scale : float, optional
+        Scale figure size up or down. Default is 1.0.
+    savefig : str, optional
+        File path to save the figure.
     """
     data = gpd.GeoDataFrame(gwr_object.params, geometry=df_geo)
     col_names = ['intercept'] + col_names + ['geometry']
@@ -129,10 +145,18 @@ def viz_gwr(col_names, df_geo, gwr_object, use_tvalues=True, alpha=0.05,
 
     col_names.pop()  # remove 'geometry'
 
-    if coef_surfaces is not None:
-        _compare_surfaces_grid(merged, coef_surfaces, use_tvalues=use_tvalues, cbar_label=cbar_label, cmap=cmap)
-    else:
-        _compare_surfaces_grid(merged, col_names, use_tvalues=use_tvalues, cbar_label=cbar_label, cmap=cmap)
+    vars_to_plot = coef_surfaces if coef_surfaces is not None else col_names
+
+    _compare_surfaces_grid(
+        merged,
+        vars_to_plot,
+        use_tvalues=use_tvalues,
+        cbar_label=cbar_label,
+        cmap=cmap,
+        max_cols=max_cols,
+        size_scale=size_scale,
+        savefig=savefig
+    )
 
 
         
