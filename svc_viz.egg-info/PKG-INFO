@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: svc_viz
-Version: 0.1.4
+Version: 0.1.5
 Summary: A python software package for visualizing the results of spatially varying coefficient (SVC) models, enhancing reproducibility and replicability
 Home-page: https://github.com/marquisvictor/svc-viz
 Author: Victor Irekponor, Taylor Oshan
